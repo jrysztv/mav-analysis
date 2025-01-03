@@ -107,6 +107,8 @@ class RouteStopAnalyzer:
 
         Returns: A list of stop IDs in the order they are first encountered.
         """
+        # safety sort
+        # group_df = group_df.sort_values(["observation_sequence_id"])
         min_lat, max_lat, min_lon, max_lon = self.build_bounding_box(
             group_df, buffer_degrees
         )
@@ -121,7 +123,7 @@ class RouteStopAnalyzer:
         )
 
     def stop_sequence_by_shape_grouped(
-        self, group_id="group_id", distance_threshold_meters=50.0, buffer_degrees=0.005
+        self, group_id: str, distance_threshold_meters=50.0, buffer_degrees=0.005
     ):
         """
         Apply vectorized_filter_stops_by_shape for each group_id in route_df.

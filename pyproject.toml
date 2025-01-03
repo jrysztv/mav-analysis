@@ -20,6 +20,9 @@ plotly-express = "^0.4.1"
 geopandas = "^1.0.1"
 polyline = "^2.0.2"
 geopy = "^2.4.1"
+tqdm = "^4.67.1"
+logger = "^1.4"
+pydantic = "^2.10.4"
 
 
 [tool.poetry.group.dev.dependencies]

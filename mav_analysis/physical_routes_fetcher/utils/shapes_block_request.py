@@ -1,4 +1,24 @@
 # %%
+"""
+This module provides functionality to fetch and process shape data from the MAV Start API.
+Classes:
+    ShapesRequest: Handles the request and processing of shape data.
+Usage:
+Classes:
+    ShapesRequest:
+        __init__(self, padding=10):
+            Initializes the ShapesRequest object with default headers and JSON data.
+        request_shape_repsonse(self):
+            Sends a POST request to the MAV Start API and returns the shape data.
+        extract_shape_dataframe(line):
+            Converts a line's polyline data into a pandas DataFrame.
+        request_and_extract(self):
+            Requests shape data and processes it into a pandas DataFrame.
+Note:
+    This usage is deprecated. The shapes data is now fetched from the MAV Scraper repository.
+    Reason: the MAV Start API does not provide quality shape data.
+"""
+
 import httpx
 import pandas as pd
 import polyline
@@ -68,3 +88,5 @@ if __name__ == "__main__":
     shapes_request = ShapesRequest()
     shape_df = shapes_request.request_and_extract()
     print(shape_df.head())
+
+# %%

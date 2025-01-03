@@ -1,2 +1,4 @@
 ﻿mav_analysis/physical_routes_fetcher/__pycache__
 __pycache__
+.vscode
+.env
