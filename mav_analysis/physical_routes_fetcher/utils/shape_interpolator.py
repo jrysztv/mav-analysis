@@ -18,15 +18,24 @@ class ShapeInterpolator:
     - Performing spherical (great-circle) interpolation using geometric_slerp.
     """
 
-    def __init__(self, route_df, group_id="elvira_id", distance_limit=500):
+    def __init__(
+        self,
+        route_df,
+        group_id="elvira_id",
+        distance_limit=500,
+        num_intermediate_points_column=None,
+    ):
         """
         :param route_df:      DataFrame containing at least [stop_lat, stop_lon] columns.
         :param group_id:      The column name by which to group shapes (e.g. 'line_id', 'elvira_id', etc.).
         :param distance_limit: The max distance (meters) per segment before inserting intermediate points.
+        :param num_intermediate_points_column: Optional column name in route_df specifying the number of intermediate points.
+                                               Overrides infering number of intemediate points from distance_limit.
         """
         self.route_df = route_df.copy()
         self.group_id = group_id
         self.distance_limit = distance_limit
+        self.num_intermediate_points_column = num_intermediate_points_column
 
     @staticmethod
     def haversine_distance(lat1, lon1, lat2, lon2):
@@ -111,13 +120,23 @@ class ShapeInterpolator:
             ["stop_lat", "stop_lon"]
         ].shift(-1)
 
+        if (
+            self.num_intermediate_points_column
+        ):  # workaround. TODO: Needs to be checked out why is this the case.
+            df.dropna(subset=["stop_lat_next", "stop_lon_next"], inplace=True)
+
         # 2. Calculate distance between consecutive shape points
         df["distance"] = self._calc_distance_by_group(df)
 
         # 3. Determine how many intermediate points to add
-        df["num_intermediate_points"] = (
-            (df["distance"] // self.distance_limit).fillna(0).astype(int)
-        )
+        if self.num_intermediate_points_column:
+            df["num_intermediate_points"] = (
+                df[self.num_intermediate_points_column].fillna(0).astype(int)
+            )
+        else:
+            df["num_intermediate_points"] = (
+                (df["distance"] // self.distance_limit).fillna(0).astype(int)
+            )
 
         # 4. Perform spherical interpolation where needed
         #    Only expand rows with num_intermediate_points > 0
@@ -138,6 +157,10 @@ class ShapeInterpolator:
 
             start_xyz = self.latlon_to_xyz(lat1, lon1)
             end_xyz = self.latlon_to_xyz(lat2, lon2)
+
+            # Debug statements to check the values
+            print(f"start_xyz: {start_xyz}, norm: {np.linalg.norm(start_xyz)}")
+            print(f"end_xyz: {end_xyz}, norm: {np.linalg.norm(end_xyz)}")
 
             t_vals = np.linspace(0, 1, n_points)
             xyz_points = geometric_slerp(start_xyz, end_xyz, t_vals)
